@@ -1,10 +1,10 @@
 #ifndef _Engine_h_
 #define _Engine_h_
 
-#include "headers.h"
+#include "Headers.h"
 #define MAX_WINDOWS 8
 
-namespace core
+namespace m3d
 {
 	typedef struct
 	{
@@ -35,6 +35,8 @@ namespace core
 			GLFWmonitor* monitor;
 			int			mWindowWidth;
 			int 		mWindowHeight;
+			int			mFramebufferWidth;
+			int			mFramebufferHeight;
 			int			mTargetFps;
 			int			mFullScreen;
 			float		mElapsedTimeDelta;
@@ -43,7 +45,7 @@ namespace core
 			float		mAccumulator;
 			int			mUpdatesPerSecond;
 			float		mFixedDeltaTime;
-			WindowData __app_windows[MAX_WINDOWS];      // 0 - main window , closing 0 will close all
+			//WindowData __app_windows[MAX_WINDOWS];      // 0 - main window , closing 0 will close all
 			int			windowsCount = 0;
 		
 			

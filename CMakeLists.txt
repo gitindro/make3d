@@ -20,8 +20,8 @@ target_link_libraries(make3d
     PRIVATE glm::glm    
     PRIVATE glfw
     PRIVATE soil2
-    PRIVATE physfs
     PUBLIC glbinding::glbinding
     PUBLIC globjects::globjects
-    PUBLIC assimp
+    PUBLIC assimp::assimp
+    PRIVATE $<IF:$<TARGET_EXISTS:PhysFS::PhysFS>,PhysFS::PhysFS,PhysFS::PhysFS-static>
     )

@@ -1,8 +1,8 @@
 #include "engine.h"
-#include "DebugUI.h"
+//#include "DebugUI.h"
 
 
-namespace core
+namespace m3d
 {
 
     Engine* g_engine = NULL;
@@ -12,18 +12,18 @@ namespace core
 
     }
 	
-    static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+    static void GLAPIENTRY MessageCallback(gl::GLenum source, gl::GLenum type, gl::GLuint id, gl::GLenum severity, gl::GLsizei length, const gl::GLchar* message, const void* userParam)
     {
-        if (type == GL_DEBUG_TYPE_ERROR)
+        if (type == gl::GL_DEBUG_TYPE_ERROR)
         {
             LOG_F(ERROR, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-                (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+                (type == gl::GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
                 type, severity, message);
         }
         else
         {
             LOG_F(INFO, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-                (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+                (type == gl::GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
                 type, severity, message);
         }
         printf("smg %d ", source);
@@ -49,6 +49,8 @@ namespace core
         mWindow = NULL;
         mWindowWidth = 0;
         mWindowHeight = 0;
+        mFramebufferHeight = 0;
+        mFramebufferWidth = 0;
         mTargetFps = 0;
         mFullScreen = 0;
         mElapsedTimeDelta = 0.0F;
@@ -57,7 +59,7 @@ namespace core
         mAccumulator = 0.0F;
         mUpdatesPerSecond = 0;
         mFixedDeltaTime = 0.0F;
-        ZERO_MEMORY(__app_windows, sizeof(__app_windows));
+        //ZERO_MEMORY(__app_windows, sizeof(__app_windows));
         windowsCount = 0;
     }
 
@@ -69,8 +71,6 @@ namespace core
         loguru::add_callback("engine_logger", __onLog, NULL, loguru::Verbosity_MAX);
 
         LOG_F(INFO, "App init --- Start of app");
-
-        LOG_F(INFO, "Create Window");
 
         glfwSetErrorCallback([](int error, const char* desc)
             {
@@ -84,22 +84,18 @@ namespace core
             return false;
         }
 
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.openglVersionMajor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.openglVersionMinor);
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
         int target_width = config.window_width;
         int target_height = config.window_height;
-        monitor = NULL;
+        
+        //monitor = nullptr;
         if (config.fullscreen)
         {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.openglVersionMajor);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.openglVersionMinor);
-
-           
             monitor = glfwGetPrimaryMonitor();
 
             target_width = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
@@ -109,9 +105,9 @@ namespace core
 
         
         /* Create a windowed mode window and its OpenGL context */
-        GLFWwindow* window = glfwCreateWindow(target_width, target_height, config.name, monitor, NULL);
+        GLFWwindow* window = glfwCreateWindow(target_width, target_height, config.name, nullptr, nullptr);
 
-        __app_windows[windowsCount].window = window;
+        mWindow = window;
         if (!window)
         {
             glfwTerminate();
@@ -121,25 +117,28 @@ namespace core
 
         LOG_F(INFO, "Created application window ", config.name);
 
-        glfwSetKeyCallback(window, __internal_key_callback);
+        //glfwSetKeyCallback(window, __internal_key_callback);
 
         /* Make the window's context current */
         glfwMakeContextCurrent(window);
 
-        gladLoadGL(glfwGetProcAddress);
+        // Initialize globjects (internally initializes glbinding, and registers the current context)
+        globjects::init([](const char* name) {
+            return glfwGetProcAddress(name);
+            });
 
-        glfwSwapInterval(1);
-        // During init, enable debug output
-        glEnable(GL_DEBUG_OUTPUT);
+        glfwGetFramebufferSize(window, &mFramebufferWidth, &mFramebufferHeight);
+
+        //gladLoadGL(glfwGetProcAddress);
+
+        //glfwSwapInterval(1);
+         //During init, enable debug output
+        globjects::enable(gl::GL_DEBUG_OUTPUT);
         glDebugMessageCallback(MessageCallback, 0);
 
         ++windowsCount;
-
-
         g_engine = this;
-
-        DebugUI::init(window);
-
+        //DebugUI::init(window);
         return true;
     }
 		
@@ -155,7 +154,7 @@ namespace core
         LOG_F(INFO, "Engine run main loop");
 
         /* Loop until the user closes the window */
-        while (!glfwWindowShouldClose(__app_windows[0].window))
+        while (!glfwWindowShouldClose(mWindow))
         {
             double now = glfwGetTime();
             float delta = (now - mPreviousTime);
@@ -199,16 +198,17 @@ namespace core
         
     void Engine::render(float alpha)
     {
-        glfwGetFramebufferSize(__app_windows[0].window, &mWindowWidth, &mWindowHeight);
-        DebugUI::begin_frame();
-        glViewport(0, 0, mWindowWidth, mWindowHeight);
-        glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glfwGetFramebufferSize(mWindow, &mWindowWidth, &mWindowHeight);
+        
+        //DebugUI::begin_frame();
+        gl::glViewport(0, 0, mWindowWidth, mWindowHeight);
+        gl::glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+        gl::glClear(gl::GL_COLOR_BUFFER_BIT | gl::GL_DEPTH_BUFFER_BIT);
 
-        DebugUI::render_frame();
-        DebugUI::end_frame();
+        //DebugUI::render_frame();
+        //DebugUI::end_frame();
             /* Swap front and back buffers */
-        glfwSwapBuffers(__app_windows[0].window);
+        glfwSwapBuffers(mWindow);
     }
 		
         
@@ -219,7 +219,7 @@ namespace core
 	
     void Engine::shutdown()
     {
-        DebugUI::shutdown();
+        //DebugUI::shutdown();
         glfwDestroyWindow(mWindow);
         glfwTerminate();
     }
