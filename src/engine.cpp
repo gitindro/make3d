@@ -74,6 +74,7 @@ namespace m3d
         }
 
         // say no to openGLs
+        // we can add checks based on selected render device to set any glfw flags
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -105,7 +106,7 @@ namespace m3d
         {
             return false;
         }
-        if (!m_renderer->Initialize(RenderDeviceType::Null, mWindow, target_width, target_height, config.fullscreen))
+        if (!m_renderer->Initialize(config.renderDeviceType, mWindow, target_width, target_height, config.fullscreen))
         {
             return false;
         }

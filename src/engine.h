@@ -6,16 +6,16 @@
 
 namespace m3d
 {
+
 	typedef struct
 	{
 		char* name;
 		int		window_width;
 		int		window_height;
 		bool	fullscreen;
-		int 	openglVersionMinor;
-		int 	openglVersionMajor;
 		int 	targetFps;
 		float	fixedTimedelta;
+		RenderDeviceType renderDeviceType;
 	} EngineConfig;
 
 

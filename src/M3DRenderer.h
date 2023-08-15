@@ -6,13 +6,13 @@
 
 namespace m3d
 {
-    class  IM3DGfxDevice;
-
     enum RenderDeviceType
     {
         Null,
         Vulkan
     };
+
+    class  IM3DGfxDevice;
 
     class M3DRenderer
     {

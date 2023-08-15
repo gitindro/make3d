@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(/external/loguru/)
 include_directories(/src)
+target_include_directories(glfw3)
 add_executable(make3d ./src/main.cpp ./external/loguru/loguru.cpp ./src/engine.cpp ./src/M3DWindow.cpp ./src/AssetManager.cpp)
 target_link_libraries(make3d
     PRIVATE glm::glm    
