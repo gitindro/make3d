@@ -3,4 +3,4 @@
 	url = https://github.com/emilk/loguru.git
 [submodule "external/rpmalloc.git"]
 	path = external/rpmalloc.git
-	url = https://github.com/mjansson/rpmalloc.git
+	url = https://github.com/mjansson/rpmalloc
