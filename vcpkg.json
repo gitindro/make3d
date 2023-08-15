@@ -5,6 +5,7 @@
       "globjects",
       "soil2",
       "assimp",
-      "physfs"
+      "physfs",
+      "vulkan"
     ]
   }

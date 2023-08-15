@@ -11,23 +11,6 @@ namespace m3d
     {
 
     }
-	
-    static void GLAPIENTRY MessageCallback(gl::GLenum source, gl::GLenum type, gl::GLuint id, gl::GLenum severity, gl::GLsizei length, const gl::GLchar* message, const void* userParam)
-    {
-        if (type == gl::GL_DEBUG_TYPE_ERROR)
-        {
-            LOG_F(ERROR, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-                (type == gl::GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-                type, severity, message);
-        }
-        else
-        {
-            LOG_F(INFO, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-                (type == gl::GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-                type, severity, message);
-        }
-        printf("smg %d ", source);
-    }
 
     static void __window_error_callback(int errorCode, const char* description)
     {
@@ -60,12 +43,18 @@ namespace m3d
         mUpdatesPerSecond = 0;
         mFixedDeltaTime = 0.0F;
         //ZERO_MEMORY(__app_windows, sizeof(__app_windows));
-        windowsCount = 0;
+        mAssetManager = nullptr;
     }
 
 
     bool Engine::init(const EngineConfig& config)
     {
+        // Init Vfs 
+        mAssetManager = new AssetManager();
+        mAssetManager->Initialize();
+
+        char* data = mAssetManager->ReadFile("SimpleShader.vert.spv");
+
         loguru::add_file("core.log", loguru::Append, loguru::Verbosity_MAX);
 
         loguru::add_callback("engine_logger", __onLog, NULL, loguru::Verbosity_MAX);
@@ -84,11 +73,9 @@ namespace m3d
             return false;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config.openglVersionMajor);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config.openglVersionMinor);
-
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+        // say no to openGLs
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         int target_width = config.window_width;
         int target_height = config.window_height;
@@ -101,8 +88,6 @@ namespace m3d
             target_width = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
             target_height = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
         }
-
-
         
         /* Create a windowed mode window and its OpenGL context */
         GLFWwindow* window = glfwCreateWindow(target_width, target_height, config.name, nullptr, nullptr);
@@ -115,28 +100,16 @@ namespace m3d
             return false;
         }
 
-        LOG_F(INFO, "Created application window ", config.name);
+        m_renderer = new M3DRenderer();
+        if (nullptr == m_renderer)
+        {
+            return false;
+        }
+        if (!m_renderer->Initialize(RenderDeviceType::Null, mWindow, target_width, target_height, config.fullscreen))
+        {
+            return false;
+        }
 
-        //glfwSetKeyCallback(window, __internal_key_callback);
-
-        /* Make the window's context current */
-        glfwMakeContextCurrent(window);
-
-        // Initialize globjects (internally initializes glbinding, and registers the current context)
-        globjects::init([](const char* name) {
-            return glfwGetProcAddress(name);
-            });
-
-        glfwGetFramebufferSize(window, &mFramebufferWidth, &mFramebufferHeight);
-
-        //gladLoadGL(glfwGetProcAddress);
-
-        //glfwSwapInterval(1);
-         //During init, enable debug output
-        globjects::enable(gl::GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(MessageCallback, 0);
-
-        ++windowsCount;
         g_engine = this;
         //DebugUI::init(window);
         return true;
@@ -189,9 +162,6 @@ namespace m3d
             /* Poll for and process events */
             glfwPollEvents();
         }
-
-
-        shutdown();
         return true;
     }
 		
@@ -200,11 +170,6 @@ namespace m3d
     {
         glfwGetFramebufferSize(mWindow, &mWindowWidth, &mWindowHeight);
         
-        //DebugUI::begin_frame();
-        gl::glViewport(0, 0, mWindowWidth, mWindowHeight);
-        gl::glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
-        gl::glClear(gl::GL_COLOR_BUFFER_BIT | gl::GL_DEPTH_BUFFER_BIT);
-
         //DebugUI::render_frame();
         //DebugUI::end_frame();
             /* Swap front and back buffers */
@@ -220,6 +185,7 @@ namespace m3d
     void Engine::shutdown()
     {
         //DebugUI::shutdown();
+        SAFE_DELETE(m_renderer);
         glfwDestroyWindow(mWindow);
         glfwTerminate();
     }
