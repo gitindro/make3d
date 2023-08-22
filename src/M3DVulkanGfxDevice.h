@@ -1,6 +1,7 @@
 #pragma once
 #include "SystemTypes.h"
 #include "IM3DGfxDevice.h"
+#include <vector>
 
 namespace m3d
 {
@@ -19,9 +20,10 @@ namespace m3d
 
 	private:
 		VkInstance m_vkInstance;
-
-
-		void CreateInstnce();
+		MUINT m_extensionCount;
+		bool CheckExtensionSupport(std::vector<cstring> list);
+		bool CreateInstance();
+		void DestroyInstance();
 	};
 }
 

@@ -1,5 +1,6 @@
 #include "M3DRenderer.h"
 #include "M3DNullGfxDevice.h"
+#include "M3DVulkanGfxDevice.h"
 
 namespace m3d
 {
@@ -20,7 +21,10 @@ namespace m3d
 		{
 			m_gfxDevice = new M3DNullGfxDevice("NULL");
 		}
-
+		else if (RenderDeviceType::Vulkan == deviceType)
+		{
+			m_gfxDevice = new M3DVulkanGfxDevice("Vulkan");
+		}
 
 		if (!m_gfxDevice->Init(window, width, height, fullscreen))
 		{

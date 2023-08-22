@@ -55,9 +55,9 @@ namespace m3d
 
         char* data = mAssetManager->ReadFile("SimpleShader.vert.spv");
 
-        loguru::add_file("core.log", loguru::Append, loguru::Verbosity_MAX);
+        loguru::add_file("core.log", loguru::Truncate, loguru::Verbosity_INFO);
 
-        loguru::add_callback("engine_logger", __onLog, NULL, loguru::Verbosity_MAX);
+        //loguru::add_callback("engine_logger", __onLog, NULL, loguru::Verbosity_0);
 
         LOG_F(INFO, "App init --- Start of app");
 
