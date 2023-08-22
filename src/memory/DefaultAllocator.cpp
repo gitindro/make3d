@@ -1,10 +1,10 @@
 #include "DefaultAllocator.h"
-#include "./../../Dependencies/rpmalloc/rpmalloc/rpmalloc.h"
+#include "../../external/rpmalloc/rpmalloc/rpmalloc.h"
 
 namespace m3d
 {
 
-	void* DefaultAllocator::Allocate(const std::size_t size, const std::size_t alignment) 
+	void* DefaultAllocator::Allocate(const SIZE_T size, const SIZE_T alignment)
 	{
 		return rpmalloc(size);
 	}

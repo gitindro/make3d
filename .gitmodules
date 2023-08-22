@@ -1,3 +1,6 @@
 [submodule "external/loguru"]
 	path = external/loguru
 	url = https://github.com/emilk/loguru.git
+[submodule "external/rpmalloc"]
+	path = external/rpmalloc
+	url = https://github.com/mjansson/rpmalloc.git
